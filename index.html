@@ -2,50 +2,83 @@
 <html>
 <head>
   <title>Order Status Form</title>
+
   <style>
     body {
       font-family: Arial;
       background: #f5f1ec;
       padding: 20px;
     }
+
     .form-box {
       max-width: 500px;
-      background: #fff;
-      padding: 20px;
+      background: #ffffff;
+      padding: 25px;
       border-radius: 10px;
       margin: auto;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
+
+    h2 {
+      text-align: center;
+    }
+
     input, select {
       width: 100%;
       padding: 10px;
-      margin: 8px 0;
+      margin-top: 10px;
+      margin-bottom: 15px;
       border: 1px solid #ccc;
       border-radius: 5px;
     }
+
     button {
+      width: 100%;
+      padding: 12px;
       background: black;
       color: white;
-      padding: 10px;
       border: none;
-      width: 100%;
+      border-radius: 5px;
       cursor: pointer;
     }
+
     button:hover {
       background: #333;
     }
+
+    #msg {
+      text-align: center;
+      margin-top: 10px;
+      font-weight: bold;
+    }
   </style>
 </head>
+
 <body>
 
 <div class="form-box">
+
   <h2>Order Status Update</h2>
 
   <form id="orderForm">
+
     <input type="text" name="name" placeholder="Customer Name" required>
+
     <input type="text" name="orderId" placeholder="Order ID" required>
+
     <input type="email" name="email" placeholder="Email ID" required>
+
     <input type="text" name="mobile" placeholder="Mobile Number" required>
 
+    <!-- Notification Type -->
+    <label>Notification Type</label>
+    <select name="notifyType" required>
+      <option value="">Select Option</option>
+      <option>Mailed</option>
+      <option>WhatsApp</option>
+    </select>
+
+    <!-- Status -->
     <label>Status</label>
     <select name="status" required>
       <option value="">Select Status</option>
@@ -55,33 +88,36 @@
       <option>Refund Paid</option>
     </select>
 
+    <!-- Checkbox -->
     <label>
       <input type="checkbox" name="completed"> ✔ Confirm Status
     </label>
 
     <button type="submit">Submit</button>
+
   </form>
 
   <p id="msg"></p>
+
 </div>
 
 <script>
-document.getElementById("orderForm").addEventListener("submit", function(e){
+document.getElementById("orderForm").addEventListener("submit", function(e) {
   e.preventDefault();
 
-  let formData = new FormData(this);
+  var formData = new FormData(this);
 
-  fetch("https://script.google.com/macros/s/AKfycbw37ei_C3vt0f_L8vUeibkFg8stMzS3VFGA447WSO7EraVpTHx0xG_S3r6ipkEwg2GMow/exec", {
+  fetch("https://script.google.com/macros/s/AKfycby9WJwwvAnbcoxz7DL7rfTJ9b1rnjpMXriKIRZAUNagDZaswVlBJ6S0MwYQJeLEw9QBhA/exec", {
     method: "POST",
     body: formData
   })
-  .then(res => res.text())
+  .then(response => response.text())
   .then(data => {
-    document.getElementById("msg").innerText = "Data Saved Successfully!";
+    document.getElementById("msg").innerText = "✅ Data Saved Successfully!";
     document.getElementById("orderForm").reset();
   })
-  .catch(err => {
-    document.getElementById("msg").innerText = "Error!";
+  .catch(error => {
+    document.getElementById("msg").innerText = "❌ Error submitting form!";
   });
 });
 </script>
