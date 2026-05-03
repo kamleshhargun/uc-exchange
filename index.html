@@ -19,12 +19,21 @@
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
 
-    input, select {
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    input, select, textarea {
       width: 100%;
       padding: 10px;
       margin: 10px 0;
       border: 1px solid #ccc;
       border-radius: 5px;
+    }
+
+    textarea {
+      height: 80px;
     }
 
     button {
@@ -40,6 +49,7 @@
     #msg {
       text-align: center;
       margin-top: 10px;
+      font-weight: bold;
     }
   </style>
 </head>
@@ -55,22 +65,19 @@
     <input type="text" name="name" placeholder="Customer Name" required>
     <input type="text" name="orderId" placeholder="Order ID" required>
     <input type="email" name="email" placeholder="Email ID" required>
-    <input type="text" name="mobile" placeholder="Mobile Number" required>
+    <input type="tel" name="mobile" placeholder="Mobile Number" required>
 
-    <!-- SINGLE STATUS DROPDOWN -->
+    <textarea name="description" placeholder="Conversation / Description" required></textarea>
+
     <label>Status</label>
     <select name="status" required>
-
       <option value="">Select Status</option>
-
       <option>📩 Mailed</option>
       <option>💬 WhatsApp</option>
-
       <option>Exchange Generated</option>
       <option>Exchange Sent</option>
       <option>Exchange Received</option>
       <option>Refund Paid</option>
-
     </select>
 
     <label>
@@ -85,11 +92,19 @@
 
 </div>
 
+<!-- 🔊 SOUND FILE -->
+<audio id="successSound">
+  <source src="https://www.soundjay.com/buttons/sounds/button-3.mp3" type="audio/mpeg">
+</audio>
+
 <script>
 document.getElementById("orderForm").addEventListener("submit", function(e) {
   e.preventDefault();
 
-  var formData = new FormData(this);
+  var form = this;
+  var formData = new FormData(form);
+
+  document.getElementById("msg").innerText = "⏳ Saving...";
 
   fetch("https://script.google.com/macros/s/AKfycby9WJwwvAnbcoxz7DL7rfTJ9b1rnjpMXriKIRZAUNagDZaswVlBJ6S0MwYQJeLEw9QBhA/exec", {
     method: "POST",
@@ -97,12 +112,21 @@ document.getElementById("orderForm").addEventListener("submit", function(e) {
   })
   .then(res => res.text())
   .then(data => {
+
+    // ✅ SUCCESS MESSAGE
     document.getElementById("msg").innerText = "✅ Saved Successfully!";
-    document.getElementById("orderForm").reset();
+
+    // 🔊 PLAY SOUND
+    document.getElementById("successSound").play();
+
+    // 🧹 RESET FORM
+    form.reset();
+
   })
   .catch(err => {
     document.getElementById("msg").innerText = "❌ Error!";
   });
+
 });
 </script>
 
