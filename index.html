@@ -1,133 +1,116 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Exchange Status Form</title>
+<title>Exchange Dashboard</title>
 
-  <style>
-    body {
-      font-family: Arial;
-      background: #f5f1ec;
-      padding: 20px;
-    }
+<style>
+body{font-family:Arial;background:#f5f1ec;padding:20px;}
+.box{max-width:1000px;margin:auto;background:#fff;padding:20px;border-radius:10px;}
+input,select,textarea{width:100%;padding:8px;margin:5px 0;}
+button{padding:10px;background:black;color:#fff;border:none;cursor:pointer;}
+.tabs button{margin-right:10px;}
+table{width:100%;border-collapse:collapse;margin-top:20px;}
+th,td{border:1px solid #ccc;padding:8px;}
+.status{font-weight:bold;}
+.pending{color:orange;}
+.done{color:green;}
+</style>
 
-    .form-box {
-      max-width: 500px;
-      background: #fff;
-      padding: 25px;
-      border-radius: 10px;
-      margin: auto;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    input, select, textarea {
-      width: 100%;
-      padding: 10px;
-      margin: 10px 0;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-
-    textarea {
-      height: 80px;
-    }
-
-    button {
-      width: 100%;
-      padding: 12px;
-      background: black;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    #msg {
-      text-align: center;
-      margin-top: 10px;
-      font-weight: bold;
-    }
-  </style>
 </head>
 
 <body>
 
-<div class="form-box">
+<div class="box">
 
-  <h2>Exchange Status Update</h2>
+<h2>Exchange Dashboard</h2>
 
-  <form id="orderForm">
+<form id="form">
+<input name="name" placeholder="Name" required>
+<input name="orderId" placeholder="Order ID" required>
+<input name="email" placeholder="Email">
+<input name="mobile" placeholder="Mobile">
 
-    <input type="text" name="name" placeholder="Customer Name" required>
-    <input type="text" name="orderId" placeholder="Order ID" required>
-    <input type="email" name="email" placeholder="Email ID" required>
-    <input type="tel" name="mobile" placeholder="Mobile Number" required>
+<textarea name="description" placeholder="Conversation"></textarea>
 
-    <textarea name="description" placeholder="Conversation / Description" required></textarea>
+<select name="status">
+<option>📩 Mailed</option>
+<option>💬 WhatsApp</option>
+<option>Exchange Generated</option>
+<option>Exchange Sent</option>
+<option>Exchange Received</option>
+<option>Refund Paid</option>
+</select>
 
-    <label>Status</label>
-    <select name="status" required>
-      <option value="">Select Status</option>
-      <option>📩 Mailed</option>
-      <option>💬 WhatsApp</option>
-      <option>Exchange Generated</option>
-      <option>Exchange Sent</option>
-      <option>Exchange Received</option>
-      <option>Refund Paid</option>
-    </select>
+<label><input type="checkbox" name="completed"> Mark as Done</label>
 
-    <label>
-      <input type="checkbox" name="completed"> ✔ Confirm Update
-    </label>
+<button>Submit</button>
+</form>
 
-    <button type="submit">Submit</button>
+<div class="tabs">
+<button onclick="loadData('pending')">Pending</button>
+<button onclick="loadData('done')">Done</button>
+</div>
 
-  </form>
-
-  <p id="msg"></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Order ID</th>
+<th>Status</th>
+<th>Conversation</th>
+<th>State</th>
+</tr>
+</thead>
+<tbody id="data"></tbody>
+</table>
 
 </div>
 
-<!-- 🔊 SOUND FILE -->
-<audio id="successSound">
-  <source src="https://www.soundjay.com/buttons/sounds/button-3.mp3" type="audio/mpeg">
-</audio>
-
 <script>
-document.getElementById("orderForm").addEventListener("submit", function(e) {
+
+const URL = "https://script.google.com/macros/s/AKfycbxScIudPR-142a4uBaCljYfCYZ2_L85yYGGZXvsIhMQW8LbGozPGJmO8CRxlysOEpqLzg/exec";
+
+// submit
+document.getElementById("form").addEventListener("submit", e=>{
   e.preventDefault();
-
-  var form = this;
-  var formData = new FormData(form);
-
-  document.getElementById("msg").innerText = "⏳ Saving...";
-
-  fetch("https://script.google.com/macros/s/AKfycbzNto4y-Rsc4amQyn2gzenJwyb4mlSsqk4oo3WJziVuDLYGeoKkZkkcEijfGIeAXm_ovw/exec", {
-    method: "POST",
-    body: formData
-  })
-  .then(res => res.text())
-  .then(data => {
-
-    // ✅ SUCCESS MESSAGE
-    document.getElementById("msg").innerText = "✅ Saved Successfully!";
-
-    // 🔊 PLAY SOUND
-    document.getElementById("successSound").play();
-
-    // 🧹 RESET FORM
-    form.reset();
-
-  })
-  .catch(err => {
-    document.getElementById("msg").innerText = "❌ Error!";
+  fetch(URL,{method:"POST", body:new FormData(e.target)})
+  .then(()=>{
+    e.target.reset();
+    loadData('pending');
   });
-
 });
+
+// load data
+function loadData(type){
+  fetch(URL)
+  .then(res=>res.json())
+  .then(data=>{
+    let html="";
+
+    data.forEach(r=>{
+
+      if(type=="pending" && r.confirmed=="Yes ✔") return;
+      if(type=="done" && r.confirmed!="Yes ✔") return;
+
+      let stateClass = r.confirmed=="Yes ✔" ? "done" : "pending";
+      let stateText = r.confirmed=="Yes ✔" ? "DONE ✅" : "PENDING ⏳";
+
+      html += `
+      <tr>
+        <td>${r.name}</td>
+        <td>${r.orderId}</td>
+        <td class="status">${r.status}</td>
+        <td style="white-space:pre-line">${r.description}</td>
+        <td class="${stateClass}">${stateText}</td>
+      </tr>`;
+    });
+
+    document.getElementById("data").innerHTML = html;
+  });
+}
+
+loadData('pending');
+
 </script>
 
 </body>
