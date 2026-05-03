@@ -4,33 +4,112 @@
 <title>Exchange Dashboard</title>
 
 <style>
-body{font-family:Arial;background:#f5f1ec;padding:20px;}
-.box{max-width:1000px;margin:auto;background:#fff;padding:20px;border-radius:10px;}
-input,select,textarea{width:100%;padding:8px;margin:5px 0;}
-button{padding:10px;background:black;color:#fff;border:none;cursor:pointer;}
-.tabs button{margin-right:10px;}
-table{width:100%;border-collapse:collapse;margin-top:20px;}
-th,td{border:1px solid #ccc;padding:8px;}
-.status{font-weight:bold;}
-.pending{color:orange;}
-.done{color:green;}
-</style>
+body {
+  font-family: Arial;
+  background: #f5f1ec;
+  margin:0;
+}
 
+.container {
+  max-width:1100px;
+  margin:auto;
+  padding:20px;
+}
+
+.card {
+  background:#fff;
+  padding:20px;
+  border-radius:10px;
+  box-shadow:0 5px 15px rgba(0,0,0,0.1);
+  margin-bottom:20px;
+}
+
+h2 { margin-bottom:15px; }
+
+input, select, textarea {
+  width:100%;
+  padding:10px;
+  margin:6px 0;
+  border:1px solid #ddd;
+  border-radius:6px;
+}
+
+textarea { height:80px; }
+
+button {
+  background:black;
+  color:#fff;
+  padding:10px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+button:hover { background:#333; }
+
+.tabs {
+  margin:15px 0;
+}
+
+.tabs button {
+  margin-right:10px;
+  background:#eee;
+  color:#000;
+}
+
+.tabs button.active {
+  background:black;
+  color:#fff;
+}
+
+table {
+  width:100%;
+  border-collapse:collapse;
+}
+
+th, td {
+  padding:10px;
+  border-bottom:1px solid #ddd;
+  font-size:13px;
+}
+
+th {
+  background:#000;
+  color:#fff;
+}
+
+.status {
+  font-weight:bold;
+}
+
+.badge-pending {
+  color:#ff9800;
+  font-weight:bold;
+}
+
+.badge-done {
+  color:green;
+  font-weight:bold;
+}
+</style>
 </head>
 
 <body>
 
-<div class="box">
+<div class="container">
 
-<h2>Exchange Dashboard</h2>
+<div class="card">
+
+<h2>Exchange Update</h2>
 
 <form id="form">
-<input name="name" placeholder="Name" required>
+
+<input name="name" placeholder="Customer Name" required>
 <input name="orderId" placeholder="Order ID" required>
 <input name="email" placeholder="Email">
 <input name="mobile" placeholder="Mobile">
 
-<textarea name="description" placeholder="Conversation"></textarea>
+<textarea name="description" placeholder="Conversation / Notes"></textarea>
 
 <select name="status">
 <option>📩 Mailed</option>
@@ -43,12 +122,21 @@ th,td{border:1px solid #ccc;padding:8px;}
 
 <label><input type="checkbox" name="completed"> Mark as Done</label>
 
-<button>Submit</button>
+<button type="submit">Save</button>
+
 </form>
 
+<p id="msg"></p>
+
+</div>
+
+<div class="card">
+
+<h2>Orders</h2>
+
 <div class="tabs">
-<button onclick="loadData('pending')">Pending</button>
-<button onclick="loadData('done')">Done</button>
+<button onclick="setTab('pending')" id="pendingBtn">Pending</button>
+<button onclick="setTab('done')" id="doneBtn">Done</button>
 </div>
 
 <table>
@@ -56,32 +144,54 @@ th,td{border:1px solid #ccc;padding:8px;}
 <tr>
 <th>Name</th>
 <th>Order ID</th>
+<th>Email</th>
+<th>Mobile</th>
 <th>Status</th>
 <th>Conversation</th>
 <th>State</th>
+<th>Date</th>
 </tr>
 </thead>
+
 <tbody id="data"></tbody>
+
 </table>
+
+</div>
 
 </div>
 
 <script>
 
-const URL = "https://script.google.com/macros/s/AKfycbxScIudPR-142a4uBaCljYfCYZ2_L85yYGGZXvsIhMQW8LbGozPGJmO8CRxlysOEpqLzg/exec";
+const URL = "https://script.google.com/macros/s/AKfycby14aIMGbLuiG9Yu9GNzTlQlLbbRoYpIza4G_zno6EYaIkAk2Q8kzv0_cXS7fksLBYQpQ/exec";
+let currentTab = "pending";
 
 // submit
 document.getElementById("form").addEventListener("submit", e=>{
   e.preventDefault();
+
+  document.getElementById("msg").innerText = "Saving...";
+
   fetch(URL,{method:"POST", body:new FormData(e.target)})
   .then(()=>{
+    document.getElementById("msg").innerText = "✅ Saved";
     e.target.reset();
-    loadData('pending');
+    loadData();
   });
 });
 
+// tabs
+function setTab(tab){
+  currentTab = tab;
+  document.getElementById("pendingBtn").classList.remove("active");
+  document.getElementById("doneBtn").classList.remove("active");
+
+  document.getElementById(tab+"Btn").classList.add("active");
+  loadData();
+}
+
 // load data
-function loadData(type){
+function loadData(){
   fetch(URL)
   .then(res=>res.json())
   .then(data=>{
@@ -89,19 +199,23 @@ function loadData(type){
 
     data.forEach(r=>{
 
-      if(type=="pending" && r.confirmed=="Yes ✔") return;
-      if(type=="done" && r.confirmed!="Yes ✔") return;
+      if(currentTab=="pending" && r.confirmed=="Yes ✔") return;
+      if(currentTab=="done" && r.confirmed!="Yes ✔") return;
 
-      let stateClass = r.confirmed=="Yes ✔" ? "done" : "pending";
-      let stateText = r.confirmed=="Yes ✔" ? "DONE ✅" : "PENDING ⏳";
+      let state = r.confirmed=="Yes ✔"
+        ? `<span class="badge-done">DONE</span>`
+        : `<span class="badge-pending">PENDING</span>`;
 
       html += `
       <tr>
         <td>${r.name}</td>
         <td>${r.orderId}</td>
+        <td>${r.email}</td>
+        <td>${r.mobile}</td>
         <td class="status">${r.status}</td>
         <td style="white-space:pre-line">${r.description}</td>
-        <td class="${stateClass}">${stateText}</td>
+        <td>${state}</td>
+        <td>${new Date(r.date).toLocaleString()}</td>
       </tr>`;
     });
 
@@ -109,7 +223,7 @@ function loadData(type){
   });
 }
 
-loadData('pending');
+setTab("pending");
 
 </script>
 
