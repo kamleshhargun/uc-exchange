@@ -12,22 +12,17 @@
 
     .form-box {
       max-width: 500px;
-      background: #ffffff;
+      background: #fff;
       padding: 25px;
       border-radius: 10px;
       margin: auto;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
 
-    h2 {
-      text-align: center;
-    }
-
     input, select {
       width: 100%;
       padding: 10px;
-      margin-top: 10px;
-      margin-bottom: 15px;
+      margin: 10px 0;
       border: 1px solid #ccc;
       border-radius: 5px;
     }
@@ -42,14 +37,9 @@
       cursor: pointer;
     }
 
-    button:hover {
-      background: #333;
-    }
-
     #msg {
       text-align: center;
       margin-top: 10px;
-      font-weight: bold;
     }
   </style>
 </head>
@@ -63,34 +53,28 @@
   <form id="orderForm">
 
     <input type="text" name="name" placeholder="Customer Name" required>
-
     <input type="text" name="orderId" placeholder="Order ID" required>
-
     <input type="email" name="email" placeholder="Email ID" required>
-
     <input type="text" name="mobile" placeholder="Mobile Number" required>
 
-    <!-- Notification Type -->
-    <label>Notification Type</label>
-    <select name="notifyType" required>
-      <option value="">Select Option</option>
-      <option>Mailed</option>
-      <option>WhatsApp</option>
-    </select>
-
-    <!-- Status -->
+    <!-- SINGLE STATUS DROPDOWN -->
     <label>Status</label>
     <select name="status" required>
+
       <option value="">Select Status</option>
+
+      <option>📩 Mailed</option>
+      <option>💬 WhatsApp</option>
+
       <option>Exchange Generated</option>
       <option>Exchange Sent</option>
       <option>Exchange Received</option>
       <option>Refund Paid</option>
+
     </select>
 
-    <!-- Checkbox -->
     <label>
-      <input type="checkbox" name="completed"> ✔ Confirm Status
+      <input type="checkbox" name="completed"> ✔ Confirm Update
     </label>
 
     <button type="submit">Submit</button>
@@ -111,13 +95,13 @@ document.getElementById("orderForm").addEventListener("submit", function(e) {
     method: "POST",
     body: formData
   })
-  .then(response => response.text())
+  .then(res => res.text())
   .then(data => {
-    document.getElementById("msg").innerText = "✅ Data Saved Successfully!";
+    document.getElementById("msg").innerText = "✅ Saved Successfully!";
     document.getElementById("orderForm").reset();
   })
-  .catch(error => {
-    document.getElementById("msg").innerText = "❌ Error submitting form!";
+  .catch(err => {
+    document.getElementById("msg").innerText = "❌ Error!";
   });
 });
 </script>
